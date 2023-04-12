@@ -1,0 +1,28 @@
+name: Build and upload IPA
+
+on:
+  push:
+    branches:
+    - main
+    - ios
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build IPA
+        run: |
+          xcodebuild -project BasiliskII.xcodeproj -scheme BasiliskII -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath build
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/BasiliskII.app Payload/
+          zip -r BasiliskII.ipa Payload
+      
+      - name: Upload IPA
+        uses: actions/upload-artifact@v2
+        with:
+          name: BasiliskII.ipa
+          path: BasiliskII.ipa
